@@ -4,8 +4,8 @@ from sklearn.preprocessing import StandardScaler
 import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import matplotlib.pyplot as plt
-import tensorflow as tf
-
+from sklearn.neural_network import MLPClassifier
+import seaborn as sns
 df = pd.read_csv("apple_quality.csv")
 
 std_scaler = StandardScaler()
@@ -29,59 +29,50 @@ X_test = pd.DataFrame(std_scaler.transform(X_test), columns=X_test.columns)
 y_train = np.expand_dims(y_train, axis=1)
 y_test = np.expand_dims(y_test, axis=1)
 
-learning_rate = 0.01
-training_epochs = 5000
-display_steps = 100
+def MultilayerPerceptron(X_train, y_train, hidden_layer_sizes, solver, alpha, learning_rate_init, activation):
+    mlp = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes, learning_rate_init=learning_rate_init, solver=solver, alpha=alpha,activation=activation, max_iter=1000)
+    mlp.fit(X_train, y_train.ravel())
+    return mlp
 
-n_input = 8 
-n_hidden = 10
-n_output = 1
+def get_metrics(model, validation, labels):
+    preds = model.predict(validation)
+    accuracy = accuracy_score(labels, preds)
+    precision = precision_score(labels, preds)
+    f1 = f1_score(labels,preds)
+    recall = recall_score(labels, preds)
+    return accuracy, f1, precision, recall
 
-X = tf.keras.Input(shape=(n_input,))
-Y = tf.keras.Input(shape=(n_output,))
+hidden_layer_sizes = [2,]
+activation = ("identity", "logistic", "tahn", "relu")
+solver = ("lbfgs", "sgd", "adam")
+alpha = 0.0001
+learning_rate_init = 0.01
+f1_list = []
+accuracy_list = []
+precision_list = []
+hidden_layer_sizes_list = []
+for i in range (2,100):
+    hidden_layer_sizes = (i,)
+    model = MultilayerPerceptron(X_train=X_train, 
+                                 y_train=y_train, 
+                                 hidden_layer_sizes=hidden_layer_sizes, 
+                                 solver=solver[2], 
+                                 alpha=alpha,
+                                 learning_rate_init=learning_rate_init, 
+                                 activation=activation[3])
+    
+    accuracy, f1, precision, recall = get_metrics(model, X_test, y_test)
+    f1_list.append(f1)
+    precision_list.append(precision)
+    accuracy_list.append(accuracy)
+    hidden_layer_sizes_list.append(i)
+    
+sns.lineplot(x = hidden_layer_sizes_list, y = f1_list, marker = 'o', label = "f1_score")
+sns.lineplot(x = hidden_layer_sizes_list, y = accuracy_list, marker = 'o', label = "accuracy score")
+sns.lineplot(x = hidden_layer_sizes_list, y = precision_list, marker = 'o', label = "precision score")
 
-weights = {
-    "hidden": tf.Variable(tf.random.normal([n_input, n_hidden])),
-    "output": tf.Variable(tf.random.normal([n_hidden, n_output])),
-}
 
-bias = {
-	"hidden": tf.Variable(tf.random.normal([n_hidden])),
-	"output": tf.Variable(tf.random.normal([n_output])),
-}
-
-def model(X, weights, bias):
-	layer1 = tf.add(tf.matmul(X, weights["hidden"]),bias["hidden"])
-	layer1 = tf.nn.relu(layer1)
-
-	output_layer = tf.matmul(layer1,weights["output"]) + bias["output"]
-	return output_layer
-
-pred = model(X, weights, bias)
-
-cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=pred, labels=Y))
-
-optimizer = tf.keras.optimizers.Adam(learning_rate)
-with tf.GradientTape() as tape:
-    loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=pred, labels=Y))
-
-gradients = tape.gradient(loss, list(weights.values()) + list(bias.values()))
-
-optimizer.apply_gradients(zip(gradients, list(weights.values()) + list(bias.values())))
-
-init = tf.global_variables_initializer()
-
-with tf.Session() as sess:
-	sess.run(init)
-
-	for epochs in range(training_epochs):
-		_, c= sess.run([optimizador,cost],feed_dict = {X: X_train, Y: y_train})
-		if(epochs + 1) % display_steps == 0:
-			print("Epoch:",epochs+1,"Cost:", c)
-	print("Optimization Finished")
-
-	test_result = sess.run(pred, feed_dict={X: X_test})
-	test_result = tf.round(tf.sigmoid(test_result)).eval()  # Arredonde as previsões para 0 ou 1
-	accuracy = accuracy_score(y_test, test_result)
-
-	print("accuracy:", accuracy.eval({X: X_test, Y: y_test}))
+plt.xlabel("hidden layer values")
+plt.ylabel("f1 score")
+plt.legend()
+plt.show()
