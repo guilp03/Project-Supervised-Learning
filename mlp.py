@@ -52,6 +52,7 @@ accuracy_list = []
 precision_list = []
 hidden_layer_sizes_list = []
 for i in range (2,100):
+    print("itter", i)
     hidden_layer_sizes = (i,)
     model = MultilayerPerceptron(X_train=X_train, 
                                  y_train=y_train, 
