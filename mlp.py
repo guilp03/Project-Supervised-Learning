@@ -72,6 +72,7 @@ sns.lineplot(x = hidden_layer_sizes_list, y = f1_list, marker = 'o', label = "f1
 sns.lineplot(x = hidden_layer_sizes_list, y = accuracy_list, marker = 'o', label = "accuracy score")
 sns.lineplot(x = hidden_layer_sizes_list, y = precision_list, marker = 'o', label = "precision score")
 
+print("accuracy:", accuracy, "f1:", f1, "precision:", precision, "recall:", recall)
 
 plt.xlabel("hidden layer values")
 plt.ylabel("f1 score")
