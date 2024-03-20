@@ -42,7 +42,7 @@ def get_metrics(model, validation, labels):
     recall = recall_score(labels, preds)
     return accuracy, f1, precision, recall
 
-hidden_layer_sizes = [2,]
+hidden_layer_sizes = [(10,7,5)]
 activation = ("identity", "logistic", "tahn", "relu")
 solver = ("lbfgs", "sgd", "adam")
 alpha = 0.0001
@@ -60,7 +60,7 @@ for i in range (2,100):
                                  solver=solver[2], 
                                  alpha=alpha,
                                  learning_rate_init=learning_rate_init, 
-                                 activation=activation[3])
+                                 activation=activation[2])
     
     accuracy, f1, precision, recall = get_metrics(model, X_test, y_test)
     f1_list.append(f1)
