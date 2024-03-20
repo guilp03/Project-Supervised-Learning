@@ -49,7 +49,7 @@ def create_graph(f1_scores, variable):
 
 best_score = [0.0, 0.0, 0.0, 0.0]
 best_n = 0
-k = [10, 100, 200, 300, 400, 500, 600, 700, 800, 900]
+k = [10, 100, 200]
 n = [2, 3, 4, 5, 6, 7, 8, 9, 10]
 m = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -90,4 +90,19 @@ plt.ylabel('y')
 
 # Save the plot to a file (e.g., PNG, PDF, etc.)
 plt.savefig('plot_find_optimal_l_and_s.png')
+plt.show()
+
+feature_importances = model_rf.feature_importances_
+
+# Criar um DataFrame para as importâncias das features
+feature_importance_df = pd.DataFrame({'Feature': X_train.columns, 'Importance': feature_importances})
+feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
+
+# Plotar as importâncias das features em um gráfico de barras
+plt.figure(figsize=(10, 6))
+plt.barh(feature_importance_df['Feature'], feature_importance_df['Importance'], color='skyblue')
+plt.xlabel('Importância')
+plt.ylabel('Feature')
+plt.title('Importância das Features')
+plt.gca().invert_yaxis()
 plt.show()
